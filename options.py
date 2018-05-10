@@ -1,9 +1,10 @@
 """ Options
 
+This script is largely based on junyanz/pytorch-CycleGAN-and-pix2pix.
+
 Returns:
     [argparse]: Class containing argparse
 """
-
 
 import argparse
 import os
@@ -46,6 +47,7 @@ class Options():
         self.parser.add_argument('--display', action='store_true', help='Use visdom.')
         self.parser.add_argument('--outf', default='./output', help='folder to output images and model checkpoints')
         self.parser.add_argument('--manualseed', type=int, help='manual seed')
+        self.parser.add_argument('--anomaly_class', default=0, help='Anomaly class idx for mnist and cifar datasets')
 
         ##
         # Train
@@ -55,13 +57,11 @@ class Options():
         self.parser.add_argument('--save_epoch_freq', type=int, default=1, help='frequency of saving checkpoints at the end of epochs')
         self.parser.add_argument('--save_image_freq', type=int, default=100, help='frequency of saving real and fake images')
         self.parser.add_argument('--save_test_images', action='store_true', help='Save test images for demo.')
-        self.parser.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
-        self.parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>, ...')
         self.parser.add_argument('--load_weights', action='store_true', help='Load the pretrained weights')
         self.parser.add_argument('--resume', default='', help="path to checkpoints (to continue training)")
         self.parser.add_argument('--phase', type=str, default='train', help='train, val, test, etc')
         self.parser.add_argument('--iter', type=int, default=0, help='Start from iteration i')
-        self.parser.add_argument('--niter', type=int, default=200, help='number of epochs to train for')
+        self.parser.add_argument('--niter', type=int, default=15, help='number of epochs to train for')
         self.parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         self.parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
         self.parser.add_argument('--lr_policy', type=str, default='lambda', help='learning rate policy: lambda|step|plateau')
