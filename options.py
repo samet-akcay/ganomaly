@@ -31,7 +31,7 @@ class Options():
         self.parser.add_argument('--batchsize', type=int, default=64, help='input batch size')
         self.parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
         self.parser.add_argument('--droplast', action='store_true', default=True, help='Drop last batch size.')
-        self.parser.add_argument('--isize', type=int, default=64, help='input image size.')
+        self.parser.add_argument('--isize', type=int, default=32, help='input image size.')
         self.parser.add_argument('--nc', type=int, default=3, help='input image channels')
         self.parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
         self.parser.add_argument('--ngf', type=int, default=64)
