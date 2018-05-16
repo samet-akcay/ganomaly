@@ -116,7 +116,7 @@ class Visualizer():
         )
 
     ##
-    def print_current_errors(self, epoch, errors, batch_i, batch_n):
+    def print_current_errors(self, epoch, errors):
         """ Print current errors.
 
         Args:
@@ -125,7 +125,8 @@ class Visualizer():
             batch_i (int): Current batch
             batch_n (int): Total Number of batches.
         """
-        message = '   [%d/%d][%d/%d] ' % (epoch, self.opt.niter, batch_i, batch_n)
+        # message = '   [%d/%d] ' % (epoch, self.opt.niter)
+        message = '   Loss: [%d/%d] ' % (epoch, self.opt.niter)
         for key, val in errors.items():
             message += '%s: %.3f ' % (key, val)
 
@@ -144,7 +145,7 @@ class Visualizer():
         message = '   '
         for key, val in performance.items():
             message += '%s: %.3f ' % (key, val)
-        message += 'max: %.3f' % best
+        message += 'max AUC: %.3f' % best
 
         print(message)
         with open(self.log_name, "a") as log_file:

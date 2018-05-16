@@ -7,8 +7,9 @@ from collections import OrderedDict
 import os
 import time
 import numpy as np
-from torch.autograd import Variable
+from tqdm import trange, tqdm
 
+from torch.autograd import Variable
 import torch.optim as optim
 import torch.nn as nn
 import torch.utils.data
@@ -268,7 +269,7 @@ class Ganomaly:
 
         self.netg.train()
         epoch_iter = 0
-        for i, data in enumerate(self.dataloader['train'], 0):
+        for data in tqdm(self.dataloader['train'], leave=False, total=len(self.dataloader['train'])):
             self.total_steps += self.opt.batchsize
             epoch_iter += self.opt.batchsize
 
@@ -277,7 +278,6 @@ class Ganomaly:
 
             if self.total_steps % self.opt.print_freq == 0:
                 errors = self.get_errors()
-                self.visualizer.print_current_errors(self.epoch, errors, i, len(self.dataloader['train']))
                 if self.opt.display:
                     counter_ratio = float(epoch_iter) / len(self.dataloader['train'].dataset)
                     self.visualizer.plot_current_errors(self.epoch, counter_ratio, errors)
@@ -288,6 +288,8 @@ class Ganomaly:
                 if self.opt.display:
                     self.visualizer.display_current_images(reals, fakes, fixed)
 
+        print(">> Training model %s. Epoch %d/%d" % (self.name(), self.epoch+1, self.opt.niter))
+        self.visualizer.print_current_errors(self.epoch, errors)
     ##
     def train(self):
         """ Train the model
@@ -304,8 +306,8 @@ class Ganomaly:
             # Train for one epoch
             self.train_epoch()
             res = self.test()
-            if res['auc'] > best_auc:
-                best_auc = res['auc']
+            if res['AUC'] > best_auc:
+                best_auc = res['AUC']
                 self.save_weights(self.epoch)
             self.visualizer.print_current_performance(res, best_auc)
         print(">> Training model %s.[Done]" % self.name())
@@ -345,12 +347,11 @@ class Ganomaly:
         if self.opt.gpu_ids:
             self.an_scores = self.an_scores.cuda()
 
-        print(">> Testing model %s." % self.name())
+        print("   Testing model %s." % self.name())
         self.times = []
         self.total_steps = 0
         epoch_iter = 0
         for i, data in enumerate(self.dataloader['test'], 0):
-            print("   {}/{}".format(i, len(self.dataloader['test'])), end='\r')
             self.total_steps += self.opt.batchsize
             epoch_iter += self.opt.batchsize
             time_i = time.time()
@@ -384,17 +385,15 @@ class Ganomaly:
         # Measure inference time.
         self.times = np.array(self.times)
         self.times = np.mean(self.times[:100] * 1000)
-        print('   Average inference time over 100 mini batches (ms): %.3f' % self.times)
 
         # Scale error vector between [0, 1]
         self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
         auc, eer = roc(self.gt_labels, self.an_scores)
-        performance = OrderedDict([('auc', auc), ('eer', eer)])
+        # performance = OrderedDict([('AUC', auc), ('EER', eer), ('Avg Run Time (ms/batch)', self.times)])
+        performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)] )
 
         if self.opt.display_id > 0 and self.opt.phase == 'test':
             counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)
             self.visualizer.plot_performance(self.epoch, counter_ratio, performance)
-
-        print('\n   Done.')
 
         return performance
