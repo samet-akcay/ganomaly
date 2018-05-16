@@ -2,8 +2,12 @@
 
 This repository contains PyTorch implementation of **"PaperName"**.
 
+## Task List
+- [ ] Update options - (Remove the ones not used.)
+
 ##  Table of Contents
 - [GANomaly](#ganomaly)
+    - [Task List](#task-list)
     - [Table of Contents](#table-of-contents)
     - [Prerequisites](#prerequisites)
     - [Experiment](#experiment)
