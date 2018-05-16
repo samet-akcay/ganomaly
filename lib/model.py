@@ -7,7 +7,7 @@ from collections import OrderedDict
 import os
 import time
 import numpy as np
-from tqdm import trange, tqdm
+from tqdm import tqdm
 
 from torch.autograd import Variable
 import torch.optim as optim
@@ -282,8 +282,8 @@ class Ganomaly:
                     counter_ratio = float(epoch_iter) / len(self.dataloader['train'].dataset)
                     self.visualizer.plot_current_errors(self.epoch, counter_ratio, errors)
 
-            reals, fakes, fixed = self.get_current_images()
             if self.total_steps % self.opt.save_image_freq == 0:
+                reals, fakes, fixed = self.get_current_images()
                 self.visualizer.save_current_images(self.epoch, reals, fakes, fixed)
                 if self.opt.display:
                     self.visualizer.display_current_images(reals, fakes, fixed)
@@ -335,7 +335,6 @@ class Ganomaly:
             print('   Loaded weights.')
 
         self.opt.phase = 'test'
-        # self.netg.eval()
 
         # Create big error tensor for the test set.
         self.an_scores = torch.FloatTensor(len(self.dataloader['test'].dataset), 1).zero_()
@@ -389,8 +388,7 @@ class Ganomaly:
         # Scale error vector between [0, 1]
         self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
         auc, eer = roc(self.gt_labels, self.an_scores)
-        # performance = OrderedDict([('AUC', auc), ('EER', eer), ('Avg Run Time (ms/batch)', self.times)])
-        performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)] )
+        performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)])
 
         if self.opt.display_id > 0 and self.opt.phase == 'test':
             counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)

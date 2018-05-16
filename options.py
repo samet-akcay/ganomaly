@@ -26,7 +26,7 @@ class Options():
 
         ##
         # Base
-        self.parser.add_argument('--dataset', default='UCSDSample.sw/UCSDped1', help='folder | atix256 | atix.patches | atix.patches.250k')
+        self.parser.add_argument('--dataset', default='cifar10', help='folder | cifar10 | mnist ')
         self.parser.add_argument('--dataroot', default='', help='path to dataset')
         self.parser.add_argument('--batchsize', type=int, default=64, help='input batch size')
         self.parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
@@ -47,14 +47,11 @@ class Options():
         self.parser.add_argument('--display', action='store_true', help='Use visdom.')
         self.parser.add_argument('--outf', default='./output', help='folder to output images and model checkpoints')
         self.parser.add_argument('--manualseed', type=int, help='manual seed')
-        self.parser.add_argument('--anomaly_class', default=0, help='Anomaly class idx for mnist and cifar datasets')
+        self.parser.add_argument('--anomaly_class', default='car', help='Anomaly class idx for mnist and cifar datasets')
 
         ##
         # Train
-        self.parser.add_argument('--display_freq', type=int, default=100, help='frequency of showing training results on screen')
         self.parser.add_argument('--print_freq', type=int, default=100, help='frequency of showing training results on console')
-        self.parser.add_argument('--save_latest_freq', type=int, default=5000, help='frequency of saving the latest results')
-        self.parser.add_argument('--save_epoch_freq', type=int, default=1, help='frequency of saving checkpoints at the end of epochs')
         self.parser.add_argument('--save_image_freq', type=int, default=100, help='frequency of saving real and fake images')
         self.parser.add_argument('--save_test_images', action='store_true', help='Save test images for demo.')
         self.parser.add_argument('--load_weights', action='store_true', help='Load the pretrained weights')
@@ -64,10 +61,6 @@ class Options():
         self.parser.add_argument('--niter', type=int, default=15, help='number of epochs to train for')
         self.parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         self.parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
-        self.parser.add_argument('--lr_policy', type=str, default='lambda', help='learning rate policy: lambda|step|plateau')
-        self.parser.add_argument('--lr_decay_iters', type=int, default=50, help='multiply by a gamma every lr_decay_iters iterations')
-        self.parser.add_argument('--gen_type', type=str, default='bowtie', help='Type of the generator network. bowtie | regular')
-        self.parser.add_argument('--dct', action='store_true', default=False, help='Add DCT to the GAN loss.')
         self.parser.add_argument('--alpha', type=float, default=50, help='alpha to weight l1 loss. default=500')
         self.isTrain = True
         self.opt = None

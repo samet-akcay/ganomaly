@@ -6,24 +6,7 @@ Losses
 
 ##
 # LIBRARIES
-from scipy.fftpack import dct, idct
 import torch
-from torch.autograd import Function
-
-##
-class DCT(Function):
-    """ Discrete Cosine Tranform Loss
-    """
-
-    def forward(self, input):
-        numpy_input = input.cpu().numpy()
-        result = dct(numpy_input)
-        return torch.FloatTensor(result).cuda()
-
-    def backward(self, grad_output):
-        numpy_go = grad_output.cpu().numpy()
-        result = idct(numpy_go)
-        return torch.FloatTensor(result).cuda()
 
 ##
 def l1_loss(input, target):
