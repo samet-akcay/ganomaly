@@ -42,7 +42,7 @@ python train.py -h
 ### Training on MNIST
 To train the model on MNIST dataset for a given anomaly class, run the following:
 
-``` python
+``` 
 python train.py \
     --dataset mnist             \
     --niter <number-of-epochs>  \
@@ -52,7 +52,7 @@ python train.py \
 ### Training on CIFAR10
 To train the model on CIFAR10 dataset for a given anomaly class, run the following:
 
-``` python
+``` 
 python train.py \
     --dataset cifar10             \
     --niter <number-of-epochs>    \
