@@ -11,6 +11,7 @@ This repository contains PyTorch implementation of **"PaperName"**.
         - [Training on MNIST](#training-on-mnist)
         - [Training on CIFAR10](#training-on-cifar10)
         - [Train on Custom Dataset](#train-on-custom-dataset)
+    - [Citing GANomaly](#citing-ganomaly)
 
 
 ## Prerequisites
@@ -134,4 +135,20 @@ optional arguments:
   --lr                  initial learning rate for adam (default: 0.0002)
   --alpha               alpha to weight l1 loss. default=500 (default: 50)
 
+```
+
+## Citing GANomaly
+If you use this repository or would like to refer the paper, please use the following BibTeX entry
+```
+@article{Akcay2018,
+    author = {Akcay, S. and Atapour-Abarghouei, A. and Breckon, T.~P.},
+    title = "{GANomaly: Semi-Supervised Anomaly Detection via Adversarial Training}",
+    journal = {ArXiv e-prints},
+    archivePrefix = "arXiv",
+    eprint = {1805.06725},
+    primaryClass = "cs.CV",
+    keywords = {Computer Science - Computer Vision and Pattern Recognition},
+    year = 2018,
+    month = may,
+}
 ```
