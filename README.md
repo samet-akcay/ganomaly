@@ -1,6 +1,6 @@
 # GANomaly
 
-This repository contains PyTorch implementation of **"PaperName"**.
+This repository contains PyTorch implementation of the following paper: GANomaly: Semi-Supervised Anomaly Detection via Adversarial Training [[1]](#reference)
 
 ##  Table of Contents
 - [GANomaly](#ganomaly)
@@ -12,6 +12,7 @@ This repository contains PyTorch implementation of **"PaperName"**.
         - [Training on CIFAR10](#training-on-cifar10)
         - [Train on Custom Dataset](#train-on-custom-dataset)
     - [Citing GANomaly](#citing-ganomaly)
+    - [Reference](#reference)
 
 
 ## Prerequisites
@@ -152,3 +153,6 @@ If you use this repository or would like to refer the paper, please use the foll
     month = may,
 }
 ```
+
+## Reference
+[1]  S. Akcay, A. Atapour-Abarghouei, and T. P. Breckon.  GANomaly:  Semi-SupervisedAnomaly Detection via Adversarial Training. ArXiv e-prints, May 2018.
