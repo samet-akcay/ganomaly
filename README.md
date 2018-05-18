@@ -101,7 +101,7 @@ usage: train.py [-h] [--dataset DATASET] [--dataroot DATAROOT]
 optional arguments:
   -h, --help            show this help message and exit
   --dataset             folder | cifar10 | mnist (default: cifar10)
-  --dataroot            path to dataset (default: )
+  --dataroot            path to dataset (default: '')
   --batchsize           input batch size (default: 64)
   --workers             number of data loading workers (default: 8)
   --droplast            Drop last batch size. (default: True)
@@ -111,30 +111,22 @@ optional arguments:
   --ngf                 Number of features of the generator network
   --ndf                 Number of features of the discriminator network.
   --extralayers         Number of extra layers on gen and disc (default: 0)
-  --gpu_ids             gpu ids: e.g. 0 0,1,2, 0,2. use -1 for CPU
-                        (default: 0)
+  --gpu_ids             gpu ids: e.g. 0 0,1,2, 0,2. use -1 for CPU (default: 0)
   --ngpu                number of GPUs to use (default: 1)
-  --name                name of the experiment
-                        (default: experiment_name)
+  --name                name of the experiment (default: experiment_name)
   --model               chooses which model to use. (default:ganomaly)
-  --display_server      visdom server of the web display
-                        (default: http://localhost)
+  --display_server      visdom server of the web display (default: http://localhost)
   --display_port        visdom port of the web display (default: 8097)
   --display_id          window id of the web display (default: 0)
   --display             Use visdom. (default: False)
-  --outf                folder to output images and model checkpoints
-                        (default: ./output)
+  --outf                folder to output images and model checkpoints (default: ./output)
   --manualseed          manual seed (default: None)
-  --anomaly_class       Anomaly class idx for mnist and cifar datasets
-                        (default: car)
-  --print_freq          frequency of showing training results on console
-                        (default: 100)
-  --save_image_freq     frequency of saving real and fake images 
-                        (default:100)
+  --anomaly_class       Anomaly class idx for mnist and cifar datasets (default: car)
+  --print_freq          frequency of showing training results on console (default: 100)
+  --save_image_freq     frequency of saving real and fake images (default:100)
   --save_test_images    Save test images for demo. (default: False)
   --load_weights        Load the pretrained weights (default: False)
-  --resume              path to checkpoints (to continue training) 
-                        (default: '')
+  --resume              path to checkpoints (to continue training) (default: '')
   --phase               train, val, test, etc (default: train)
   --iter                Start from iteration i (default: 0)
   --niter               number of epochs to train for (default: 15)
