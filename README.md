@@ -155,4 +155,4 @@ If you use this repository or would like to refer the paper, please use the foll
 ```
 
 ## Reference
-[1]  S. Akcay, A. Atapour-Abarghouei, and T. P. Breckon.  GANomaly:  Semi-SupervisedAnomaly Detection via Adversarial Training. ArXiv e-prints, May 2018.
+[[1]  S. Akcay, A. Atapour-Abarghouei, and T. P. Breckon.  GANomaly:  Semi-SupervisedAnomaly Detection via Adversarial Training. ArXiv e-prints, May 2018.](https://arxiv.org/abs/1805.06725)
