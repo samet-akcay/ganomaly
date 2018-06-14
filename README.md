@@ -16,9 +16,14 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 
 
 ## Prerequisites
-1. OS: Linux or MacOS
-2. PyTorch v0.3 - For now v0.4 is not supported
-3. GPU - Highly recommended
+Please note that this project has been tested on the following packages versions. Using different version might result in errors when running the code.
+1. PyTorch 0.3.0.post4
+2. torchvision 0.1.9
+3. visdom 0.1.7
+4. tqdm 4.15.0
+
+The project is currently being migrated to PyTorch v0.4, and the repository will be updated once the migration is done.
+
 
 
 ## Experiment
