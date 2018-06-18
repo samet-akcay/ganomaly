@@ -1,6 +1,6 @@
 """GANomaly
 """
-# pylint: disable=C0301,W0622,C0103,R0902,R0915
+# pylint: disable=C0301,E1101,W0622,C0103,R0902,R0915
 
 ##
 from collections import OrderedDict
@@ -40,6 +40,7 @@ class Ganomaly:
         self.dataloader = dataloader
         self.trn_dir = os.path.join(self.opt.outf, self.opt.name, 'train')
         self.tst_dir = os.path.join(self.opt.outf, self.opt.name, 'test')
+        self.device = torch.device("cuda:0" if self.opt.gpu_ids!=-1 else "cpu")
 
         # -- Discriminator attributes.
         self.out_d_real = None
@@ -67,8 +68,8 @@ class Ganomaly:
 
         ##
         # Create and initialize networks.
-        self.netg = NetG(self.opt)
-        self.netd = NetD(self.opt)
+        self.netg = NetG(self.opt).to(self.device)
+        self.netd = NetD(self.opt).to(self.device)
         self.netg.apply(weights_init)
         self.netd.apply(weights_init)
 
@@ -91,41 +92,12 @@ class Ganomaly:
 
         ##
         # Initialize input tensors.
-        self.input = torch.FloatTensor(self.opt.batchsize, 3, self.opt.isize, self.opt.isize)
-        self.label = torch.FloatTensor(self.opt.batchsize)
-        self.gt = torch.LongTensor(self.opt.batchsize)
-        self.pixel_gt = torch.FloatTensor(self.opt.batchsize, 3, self.opt.isize, self.opt.isize)
-        self.noise = torch.FloatTensor(self.opt.batchsize, self.opt.nz, 1, 1)
-        self.fixed_noise = torch.FloatTensor(self.opt.batchsize, self.opt.nz, 1, 1).normal_(0, 1)
-        self.fixed_input = torch.FloatTensor(self.opt.batchsize, 3, self.opt.isize, self.opt.isize)
+        self.input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.label = torch.empty(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
+        self.gt    = torch.empty(size=(opt.batchsize,), dtype=torch.long, device=self.device)
+        self.fixed_input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
         self.real_label = 1
         self.fake_label = 0
-
-        self.an_scores = torch.FloatTensor([]) # Anomaly scores.
-        self.gt_labels = torch.LongTensor([])  # Frame Level GT Labels.
-        self.pixel_gts = torch.FloatTensor([]) # Pixel Level GT Labels.
-
-        ##
-        # Convert to CUDA if available.
-        if self.opt.gpu_ids:
-            self.netd.cuda()
-            self.netg.cuda()
-            self.bce_criterion.cuda()
-            self.l1l_criterion.cuda()
-            self.input, self.label = self.input.cuda(), self.label.cuda()
-            self.gt, self.pixel_gt = self.gt.cuda(), self.pixel_gt.cuda()
-            self.noise, self.fixed_noise = self.noise.cuda(), self.fixed_noise.cuda()
-            self.fixed_input = self.fixed_input.cuda()
-
-        ##
-        # Convert to Autograd Variable
-        self.input = Variable(self.input, requires_grad=False)
-        self.label = Variable(self.label, requires_grad=False)
-        self.gt = Variable(self.gt, requires_grad=False)
-        self.pixel_gt = Variable(self.pixel_gt, requires_grad=False)
-        self.noise = Variable(self.noise, requires_grad=False)
-        self.fixed_noise = Variable(self.fixed_noise, requires_grad=False)
-        self.fixed_input = Variable(self.fixed_input, requires_grad=False)
 
         ##
         # Setup optimizer
@@ -210,7 +182,7 @@ class Ganomaly:
         self.update_netg()
 
         # If D loss is zero, then re-initialize netD
-        if self.err_d_real.data[0] < 1e-5 or self.err_d_fake.data[0] < 1e-5:
+        if self.err_d_real.item() < 1e-5 or self.err_d_fake.item() < 1e-5:
             self.reinitialize_netd()
 
     ##
@@ -221,13 +193,13 @@ class Ganomaly:
             [OrderedDict]: Dictionary containing errors.
         """
 
-        errors = OrderedDict([('err_d', self.err_d.data[0]),
-                              ('err_g', self.err_g.data[0]),
-                              ('err_d_real', self.err_d_real.data[0]),
-                              ('err_d_fake', self.err_d_fake.data[0]),
-                              ('err_g_bce', self.err_g_bce.data[0]),
-                              ('err_g_l1l', self.err_g_l1l.data[0]),
-                              ('err_g_enc', self.err_g_enc.data[0])])
+        errors = OrderedDict([('err_d', self.err_d.item()),
+                              ('err_g', self.err_g.item()),
+                              ('err_d_real', self.err_d_real.item()),
+                              ('err_d_fake', self.err_d_fake.item()),
+                              ('err_g_bce', self.err_g_bce.item()),
+                              ('err_g_l1l', self.err_g_l1l.item()),
+                              ('err_g_enc', self.err_g_enc.item())])
 
         return errors
 
@@ -322,76 +294,66 @@ class Ganomaly:
         Raises:
             IOError: Model weights not found.
         """
+        with torch.no_grad():
+            # Load the weights of netg and netd.
+            if self.opt.load_weights:
+                path = "./output/{}/{}/train/weights/netG.pth".format(self.name().lower(), self.opt.dataset)
+                pretrained_dict = torch.load(path)['state_dict']
 
-        # Load the weights of netg and netd.
-        if self.opt.load_weights:
-            path = "./output/{}/{}/train/weights/netG.pth".format(self.name().lower(), self.opt.dataset)
-            pretrained_dict = torch.load(path)['state_dict']
+                try:
+                    self.netg.load_state_dict(pretrained_dict)
+                except IOError:
+                    raise IOError("netG weights not found")
+                print('   Loaded weights.')
 
-            try:
-                self.netg.load_state_dict(pretrained_dict)
-            except IOError:
-                raise IOError("netG weights not found")
-            print('   Loaded weights.')
+            self.opt.phase = 'test'
 
-        self.opt.phase = 'test'
+            # Create big error tensor for the test set.
+            self.an_scores = torch.zeros(size=(len(self.dataloader['test'].dataset),), dtype=torch.float32, device=self.device)
+            self.gt_labels = torch.zeros(size=(len(self.dataloader['test'].dataset),), dtype=torch.long,    device=self.device)
+            self.latent_i  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
+            self.latent_o  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
 
-        # Create big error tensor for the test set.
-        self.an_scores = torch.FloatTensor(len(self.dataloader['test'].dataset), 1).zero_()
-        self.gt_labels = torch.LongTensor(len(self.dataloader['test'].dataset), 1).zero_()
+            print("   Testing model %s." % self.name())
+            self.times = []
+            self.total_steps = 0
+            epoch_iter = 0
+            for i, data in enumerate(self.dataloader['test'], 0):
+                self.total_steps += self.opt.batchsize
+                epoch_iter += self.opt.batchsize
+                time_i = time.time()
+                self.set_input(data)
+                self.fake, latent_i, latent_o = self.netg(self.input)
 
-        self.latent_i = torch.FloatTensor(len(self.dataloader['test'].dataset), self.opt.nz).zero_()
-        self.latent_o = torch.FloatTensor(len(self.dataloader['test'].dataset), self.opt.nz).zero_()
+                error = torch.mean(torch.pow((latent_i-latent_o), 2), dim=1)
+                time_o = time.time()
 
-        if self.opt.gpu_ids:
-            self.an_scores = self.an_scores.cuda()
+                self.an_scores[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0)] = error.reshape(error.size(0))
+                self.gt_labels[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0)] = self.gt.reshape(error.size(0))
+                self.latent_i [i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_i.reshape(error.size(0), self.opt.nz)
+                self.latent_o [i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_o.reshape(error.size(0), self.opt.nz)
 
-        print("   Testing model %s." % self.name())
-        self.times = []
-        self.total_steps = 0
-        epoch_iter = 0
-        for i, data in enumerate(self.dataloader['test'], 0):
-            self.total_steps += self.opt.batchsize
-            epoch_iter += self.opt.batchsize
-            time_i = time.time()
-            self.set_input(data)
-            self.fake, latent_i, latent_o = self.netg(self.input)
+                self.times.append(time_o - time_i)
 
-            error = torch.mean(torch.pow((latent_i-latent_o), 2), dim=1)
-            time_o = time.time()
+                # Save test images.
+                if self.opt.save_test_images:
+                    dst = os.path.join(self.opt.outf, self.opt.name, 'test', 'images')
+                    if not os.path.isdir(dst):
+                        os.makedirs(dst)
+                    real, fake, _ = self.get_current_images()
+                    vutils.save_image(real, '%s/real_%03d.eps' % (dst, i+1), normalize=True)
+                    vutils.save_image(fake, '%s/fake_%03d.eps' % (dst, i+1), normalize=True)
 
-            if self.opt.gpu_ids:
-                self.an_scores[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0)] = error.data.view(error.size(0), 1)
-                self.gt_labels[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0)] = self.gt.data
-                self.latent_i[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_i.data.view(error.size(0), self.opt.nz)
-                self.latent_o[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_o.data.view(error.size(0), self.opt.nz)
-            else:
-                self.an_scores[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), 1] = error.cpu().data.view(error.size(0), 1)
-                self.gt_labels[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0)] = self.gt.cpu().data
-                self.latent_i[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_i.cpu().data.view(error.size(0), self.opt.nz)
-                self.latent_o[i*self.opt.batchsize : i*self.opt.batchsize+error.size(0), :] = latent_o.cpu().data.view(error.size(0), self.opt.nz)
-            self.times.append(time_o - time_i)
+            # Measure inference time.
+            self.times = np.array(self.times)
+            self.times = np.mean(self.times[:100] * 1000)
 
-            # Save test images.
-            if self.opt.save_test_images:
-                dst = os.path.join(self.opt.outf, self.opt.name, 'test', 'images')
-                if not os.path.isdir(dst):
-                    os.makedirs(dst)
-                real, fake, _ = self.get_current_images()
-                vutils.save_image(real, '%s/real_%03d.eps' % (dst, i+1), normalize=True)
-                vutils.save_image(fake, '%s/fake_%03d.eps' % (dst, i+1), normalize=True)
+            # Scale error vector between [0, 1]
+            self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
+            auc, eer = roc(self.gt_labels, self.an_scores)
+            performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)])
 
-        # Measure inference time.
-        self.times = np.array(self.times)
-        self.times = np.mean(self.times[:100] * 1000)
-
-        # Scale error vector between [0, 1]
-        self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
-        auc, eer = roc(self.gt_labels, self.an_scores)
-        performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)])
-
-        if self.opt.display_id > 0 and self.opt.phase == 'test':
-            counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)
-            self.visualizer.plot_performance(self.epoch, counter_ratio, performance)
-
-        return performance
+            if self.opt.display_id > 0 and self.opt.phase == 'test':
+                counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)
+                self.visualizer.plot_performance(self.epoch, counter_ratio, performance)
+            return performance
