@@ -20,8 +20,6 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 2. Python 3
 3. CPU or GPU + CUDA & CUDNN
 
-
-
 ## Installation
 1. First clone the repository
    ```
@@ -33,7 +31,6 @@ This repository contains PyTorch implementation of the following paper: GANomaly
    pip install -r requirements.txt
    ```
 **UPDATE**: This repository now supports PyTorch v0.4. If you still would like to work with v0.3, you could use the branch names PyTorch.v0.3, which contains the previous version of the repo.
-
 
 ## Experiment
 
@@ -98,6 +95,7 @@ Custom Dataset
 │   │   └── normal_tst_img_1.png
 │   │   ...
 │   │   └── normal_tst_img_t.png
+
 ```
 
 Then model training is the same as training MNIST or CIFAR10 datasets explained above.
