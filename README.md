@@ -79,9 +79,21 @@ To train the model on a custom dataset, the dataset should be copied into `./dat
 Custom Dataset
 ├── test
 │   ├── 0.normal
-│   └── 1.abnormal
-└── train
-    └── 0.normal
+│   │   └── normal_tst_img_0.png
+│   │   └── normal_tst_img_1.png
+│   │   ...
+│   │   └── normal_tst_img_n.png
+│   ├── 1.abnormal
+│   │   └── abnormal_tst_img_0.png
+│   │   └── abnormal_tst_img_1.png
+│   │   ...
+│   │   └── abnormal_tst_img_m.png
+├── train
+│   ├── 0.normal
+│   │   └── normal_tst_img_0.png
+│   │   └── normal_tst_img_1.png
+│   │   ...
+│   │   └── normal_tst_img_t.png
 
 ```
 
