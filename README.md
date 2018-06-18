@@ -16,14 +16,23 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 
 
 ## Prerequisites
-Please note that this project has been tested on the following packages versions. Using different version might result in errors when running the code.
-1. PyTorch 0.3.0.post4
-2. torchvision 0.1.9
-3. visdom 0.1.7
-4. tqdm 4.15.0
+1. Linux or MacOS
+2. Python 3
+3. CPU or GPU + CUDA & CUDNN
 
-The project is currently being migrated to PyTorch v0.4, and the repository will be updated once the migration is done.
 
+
+## Installation
+1. First clone the repository
+   ```
+   git@github.com:samet-akcay/ganomaly.git
+   ```
+2. Install PyTorch and torchvision from [https://pytorch.org](https://pytorch.org/)
+3. Install the dependencies.
+   ```
+   pip install -r requirements.txt
+   ```
+**UPDATE**: This repository now supports PyTorch v0.4. If you still would like to work with v0.3, you could use the branch names PyTorch.v0.3, which contains the previous version of the repo.
 
 
 ## Experiment
