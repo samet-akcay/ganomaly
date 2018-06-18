@@ -16,10 +16,24 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 
 
 ## Prerequisites
-1. OS: Linux or MacOS
-2. PyTorch v0.3 - For now v0.4 is not supported
-3. GPU - Highly recommended
+1. Linux or MacOS
+2. Python 3
+3. CPU or GPU + CUDA & CUDNN
+2. To install the required modules, run the following:
+   ```
+   pip install -R requirements
+   ```
 
+## Installation
+1. First clone the repository
+   ```
+   git@github.com:samet-akcay/ganomaly.git
+   ```
+2. Install PyTorch and torchvision from [https://pytorch.org](https://pytorch.org/)
+3. Install the dependencies.
+   ```
+   pip install -r requirements.txt
+   ```
 
 ## Experiment
 
