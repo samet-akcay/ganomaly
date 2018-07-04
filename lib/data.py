@@ -2,6 +2,8 @@
 LOAD DATA from file.
 """
 
+# pylint: disable=C0301,E1101,W0622,C0103,R0902,R0915
+
 ##
 import os
 import torch
@@ -122,7 +124,7 @@ def load_data(opt):
         return dataloader
 
 ##
-def get_cifar_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0):
+def get_cifar_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0, manualseed=-1):
     """[summary]
 
     Arguments:
@@ -164,6 +166,29 @@ def get_cifar_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0)
     abn_trn_lbl[:] = 1
     abn_tst_lbl[:] = 1
 
+    # --
+    if manualseed != -1:
+        # Random seed.
+        # Concatenate the original train and test sets.
+        nrm_img = np.concatenate((nrm_trn_img, nrm_tst_img), axis=0)
+        nrm_lbl = np.concatenate((nrm_trn_lbl, nrm_tst_lbl), axis=0)
+        abn_img = np.concatenate((abn_trn_img, abn_tst_img), axis=0)
+        abn_lbl = np.concatenate((abn_trn_lbl, abn_tst_lbl), axis=0)
+
+        # Split the normal data into the new train and tests.
+        idx = np.arange(len(nrm_lbl))
+        np.random.seed(manualseed)
+        np.random.shuffle(idx)
+
+        nrm_trn_len = int(len(idx) * 0.80)
+        nrm_trn_idx = idx[:nrm_trn_len]
+        nrm_tst_idx = idx[nrm_trn_len:]
+
+        nrm_trn_img = nrm_img[nrm_trn_idx]
+        nrm_trn_lbl = nrm_lbl[nrm_trn_idx]
+        nrm_tst_img = nrm_img[nrm_tst_idx]
+        nrm_tst_lbl = nrm_lbl[nrm_tst_idx]
+
     # Create new anomaly dataset based on the following data structure:
     # - anomaly dataset
     #   . -> train
@@ -179,7 +204,7 @@ def get_cifar_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0)
     return new_trn_img, new_trn_lbl, new_tst_img, new_tst_lbl
 
 ##
-def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0):
+def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0, manualseed=-1):
     """[summary]
 
     Arguments:
@@ -196,7 +221,6 @@ def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0)
     """
     # --
     # Find normal abnormal indexes.
-    # TODO: PyTorch v0.4 has torch.where function
     nrm_trn_idx = torch.from_numpy(np.where(trn_lbl.numpy() != abn_cls_idx)[0])
     abn_trn_idx = torch.from_numpy(np.where(trn_lbl.numpy() == abn_cls_idx)[0])
     nrm_tst_idx = torch.from_numpy(np.where(tst_lbl.numpy() != abn_cls_idx)[0])
@@ -222,6 +246,29 @@ def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0)
     nrm_tst_lbl[:] = 0
     abn_trn_lbl[:] = 1
     abn_tst_lbl[:] = 1
+
+    # --
+    if manualseed != -1:
+        # Random seed.
+        # Concatenate the original train and test sets.
+        nrm_img = torch.cat((nrm_trn_img, nrm_tst_img), dim=0)
+        nrm_lbl = torch.cat((nrm_trn_lbl, nrm_tst_lbl), dim=0)
+        abn_img = torch.cat((abn_trn_img, abn_tst_img), dim=0)
+        abn_lbl = torch.cat((abn_trn_lbl, abn_tst_lbl), dim=0)
+
+        # Split the normal data into the new train and tests.
+        idx = np.arange(len(nrm_lbl))
+        np.random.seed(manualseed)
+        np.random.shuffle(idx)
+
+        nrm_trn_len = int(len(idx) * 0.80)
+        nrm_trn_idx = idx[:nrm_trn_len]
+        nrm_tst_idx = idx[nrm_trn_len:]
+
+        nrm_trn_img = nrm_img[nrm_trn_idx]
+        nrm_trn_lbl = nrm_lbl[nrm_trn_idx]
+        nrm_tst_img = nrm_img[nrm_tst_idx]
+        nrm_tst_lbl = nrm_lbl[nrm_tst_idx]
 
     # Create new anomaly dataset based on the following data structure:
     new_trn_img = nrm_trn_img.clone()
