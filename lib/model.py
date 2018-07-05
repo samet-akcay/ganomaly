@@ -18,7 +18,7 @@ import torchvision.utils as vutils
 from lib.networks import NetG, NetD, weights_init
 from lib.visualizer import Visualizer
 from lib.loss import l2_loss
-from lib.evaluate import roc
+from lib.evaluate import evaluate
 
 ##
 class Ganomaly:
@@ -81,8 +81,8 @@ class Ganomaly:
             self.netd.load_state_dict(torch.load(os.path.join(self.opt.resume, 'netD.pth'))['state_dict'])
             print("\tDone.\n")
 
-        print(self.netg)
-        print(self.netd)
+        # print(self.netg)
+        # print(self.netd)
 
         ##
         # Loss Functions
@@ -261,7 +261,7 @@ class Ganomaly:
                     self.visualizer.display_current_images(reals, fakes, fixed)
 
         print(">> Training model %s. Epoch %d/%d" % (self.name(), self.epoch+1, self.opt.niter))
-        self.visualizer.print_current_errors(self.epoch, errors)
+        # self.visualizer.print_current_errors(self.epoch, errors)
     ##
     def train(self):
         """ Train the model
@@ -314,7 +314,7 @@ class Ganomaly:
             self.latent_i  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
             self.latent_o  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
 
-            print("   Testing model %s." % self.name())
+            # print("   Testing model %s." % self.name())
             self.times = []
             self.total_steps = 0
             epoch_iter = 0
@@ -350,8 +350,9 @@ class Ganomaly:
 
             # Scale error vector between [0, 1]
             self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
-            auc, eer = roc(self.gt_labels, self.an_scores)
-            performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('EER', eer), ('AUC', auc)])
+            # auc, eer = roc(self.gt_labels, self.an_scores)
+            auc = evaluate(self.gt_labels, self.an_scores)
+            performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('AUC', auc)])
 
             if self.opt.display_id > 0 and self.opt.phase == 'test':
                 counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)

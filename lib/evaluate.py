@@ -11,13 +11,19 @@ Returns:
 from __future__ import print_function
 
 import os
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, average_precision_score
 from scipy.optimize import brentq
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
 rc('text', usetex=True)
+
+def evaluate(labels, scores, metric='roc'):
+    if metric == 'roc':
+        return roc(labels, scores)
+    elif metric == 'auprc':
+        return auprc(labels, scores)
 
 ##
 def roc(labels, scores, saveto=None):
@@ -48,4 +54,8 @@ def roc(labels, scores, saveto=None):
         plt.savefig(os.path.join(saveto, "ROC.pdf"))
         plt.close()
 
-    return roc_auc, eer
+    return roc_auc
+
+def auprc(labels, scores):
+    ap = average_precision_score(labels, scores)
+    return ap
