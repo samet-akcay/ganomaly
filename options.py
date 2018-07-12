@@ -61,7 +61,9 @@ class Options():
         self.parser.add_argument('--niter', type=int, default=15, help='number of epochs to train for')
         self.parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         self.parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
-        self.parser.add_argument('--alpha', type=float, default=50, help='alpha to weight l1 loss. default=500')
+        self.parser.add_argument('--w_bce', type=float, default=1, help='alpha to weight bce loss.')
+        self.parser.add_argument('--w_rec', type=float, default=50, help='alpha to weight reconstruction loss')
+        self.parser.add_argument('--w_enc', type=float, default=1, help='alpha to weight encoder loss')
         self.isTrain = True
         self.opt = None
 
