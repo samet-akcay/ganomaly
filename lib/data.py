@@ -132,7 +132,7 @@ def load_data(opt):
             tst_img=dataset['test'].test_data,
             tst_lbl=dataset['test'].test_labels,
             nrm_cls_idx=opt.anomaly_class,
-            proportion=0.1
+            proportion=opt.proportion
         )
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
@@ -315,7 +315,7 @@ def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0,
     return new_trn_img, new_trn_lbl, new_tst_img, new_tst_lbl
 
 ##
-def get_mnist2_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, nrm_cls_idx=0, proportion=0.1):
+def get_mnist2_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, nrm_cls_idx=0, proportion=0.5):
     """ Create mnist 2 anomaly dataset.
 
     Arguments:
