@@ -25,7 +25,7 @@ def evaluate(labels, scores, metric='roc'):
     elif metric == 'auprc':
         return auprc(labels, scores)
     elif metric == 'f1_score':
-        threshold = 0.25
+        threshold = 0.20
         scores[scores >= threshold] = 1
         scores[scores <  threshold] = 0
         return f1_score(labels, scores)
