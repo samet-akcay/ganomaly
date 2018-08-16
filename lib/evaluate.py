@@ -11,7 +11,7 @@ Returns:
 from __future__ import print_function
 
 import os
-from sklearn.metrics import roc_curve, auc, average_precision_score
+from sklearn.metrics import roc_curve, auc, average_precision_score, f1_score
 from scipy.optimize import brentq
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
@@ -24,6 +24,13 @@ def evaluate(labels, scores, metric='roc'):
         return roc(labels, scores)
     elif metric == 'auprc':
         return auprc(labels, scores)
+    elif metric == 'f1_score':
+        threshold = 0.25
+        scores[scores >= threshold] = 1
+        scores[scores <  threshold] = 0
+        return f1_score(labels, scores)
+    else:
+        raise NotImplementedError("Check the evaluation metric.")
 
 ##
 def roc(labels, scores, saveto=None):
