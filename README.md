@@ -23,7 +23,7 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 ## Installation
 1. First clone the repository
    ```
-   git clone https://github.com:samet-akcay/ganomaly.git
+   git clone https://github.com/samet-akcay/ganomaly.git
    ```
 2. Install PyTorch and torchvision from [https://pytorch.org](https://pytorch.org/)
 3. Install the dependencies.
