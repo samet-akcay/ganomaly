@@ -21,7 +21,7 @@ from lib.loss import l2_loss
 from lib.evaluate import evaluate
 
 ##
-class Ganomaly:
+class Ganomaly(object):
     """GANomaly Class
     """
 
