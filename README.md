@@ -17,7 +17,7 @@ This repository contains PyTorch implementation of the following paper: GANomaly
 
 ## Prerequisites
 1. Linux or MacOS
-2. Python 3
+2. Python 2 or 3
 3. CPU or GPU + CUDA & CUDNN
 
 ## Installation
