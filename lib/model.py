@@ -124,27 +124,27 @@ class Ganomaly(object):
     ##
     def update_netd(self):
         """
-        Update D network: maximize log(D(x)) + log(1 - D(G(z)))
+        Update D network: Ladv = |f(real) - f(fake)|_2
         """
-        # BCE
+        ##
+        # Feature Matching.
         self.netd.zero_grad()
         # --
         # Train with real
         self.label.data.resize_(self.opt.batchsize).fill_(self.real_label)
         self.out_d_real, self.feat_real = self.netd(self.input)
-        self.err_d_real = self.bce_criterion(self.out_d_real, self.label)
-        self.err_d_real.backward()
         # --
         # Train with fake
         self.label.data.resize_(self.opt.batchsize).fill_(self.fake_label)
         self.fake, self.latent_i, self.latent_o = self.netg(self.input)
-
         self.out_d_fake, self.feat_fake = self.netd(self.fake.detach())
-        self.err_d_fake = self.bce_criterion(self.out_d_fake, self.label)
         # --
-        self.err_d_fake.backward()
-        self.err_d = self.err_d_real + self.err_d_fake
+        self.err_d = l2_loss(self.feat_real, self.feat_fake)
+        self.err_d_real = self.err_d
+        self.err_d_fake = self.err_d
+        self.err_d.backward()
         self.optimizer_d.step()
+
 
     ##
     def reinitialize_netd(self):
@@ -157,7 +157,7 @@ class Ganomaly(object):
     def update_netg(self):
         """
         # ============================================================ #
-        # (2) Update G network: log(D(G(z)))  + ||G(z) - x||           #
+        # (2) Update G network: log(D(G(x)))  + ||G(x) - x||           #
         # ============================================================ #
 
         """
