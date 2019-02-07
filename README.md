@@ -30,7 +30,7 @@ This repository contains PyTorch implementation of the following paper: GANomaly
    ```
    pip install -r requirements.txt
    ```
-**UPDATE**: This repository now supports PyTorch v0.4. If you still would like to work with v0.3, you could use the branch named PyTorch.v0.3, which contains the previous version of the repo.
+This repository supports PyTorch v0.4+. If you still would like to work with v0.3, you could use the branch named PyTorch.v0.3, which contains the previous version of the repo.
 
 ## Experiment
 
