@@ -13,12 +13,7 @@ This repository contains PyTorch implementation of the following paper: GANomaly
         - [Train on Custom Dataset](#train-on-custom-dataset)
     - [Citing GANomaly](#citing-ganomaly)
     - [Reference](#reference)
-
-
-## Prerequisites
-1. Linux or MacOS
-2. Python 2 or 3
-3. CPU or GPU + CUDA & CUDNN
+    
 
 ## Installation
 1. First clone the repository
@@ -30,7 +25,6 @@ This repository contains PyTorch implementation of the following paper: GANomaly
    ```
    pip install -r requirements.txt
    ```
-This repository supports PyTorch v0.4+. If you would like to work with v0.3, you could use the branch named PyTorch.v0.3, which contains the previous version of the repo.
 
 ## Experiment
 
@@ -164,18 +158,15 @@ optional arguments:
 ## Citing GANomaly
 If you use this repository or would like to refer the paper, please use the following BibTeX entry
 ```
-@article{Akcay2018,
-    author = {Akcay, S. and Atapour-Abarghouei, A. and Breckon, T.~P.},
-    title = "{GANomaly: Semi-Supervised Anomaly Detection via Adversarial Training}",
-    journal = {ArXiv e-prints},
-    archivePrefix = "arXiv",
-    eprint = {1805.06725},
-    primaryClass = "cs.CV",
-    keywords = {Computer Science - Computer Vision and Pattern Recognition},
-    year = 2018,
-    month = may,
+@inproceedings{akcay2018ganomaly,
+  title={Ganomaly: Semi-supervised anomaly detection via adversarial training},
+  author={Akcay, Samet and Atapour-Abarghouei, Amir and Breckon, Toby P},
+  booktitle={Asian Conference on Computer Vision},
+  pages={622--637},
+  year={2018},
+  organization={Springer}
 }
 ```
 
 ## Reference
-[[1]  S. Akcay, A. Atapour-Abarghouei, and T. P. Breckon.  GANomaly:  Semi-SupervisedAnomaly Detection via Adversarial Training. ArXiv e-prints, May 2018.](https://arxiv.org/abs/1805.06725)
+[[1]  Akcay S., Atapour-Abarghouei A., Breckon T.P. (2019) GANomaly: Semi-supervised Anomaly Detection via Adversarial Training. In: Jawahar C., Li H., Mori G., Schindler K. (eds) Computer Vision – ACCV 2018. ACCV 2018. Lecture Notes in Computer Science, vol 11363. Springer, Cham
