@@ -55,20 +55,24 @@ def load_data(opt):
         dataset['train'] = CIFAR10(root='./data', train=True, download=True, transform=transform)
         dataset['test'] = CIFAR10(root='./data', train=False, download=True, transform=transform)
 
-        dataset['train'].train_data, dataset['train'].train_labels, \
-        dataset['test'].test_data, dataset['test'].test_labels = get_cifar_anomaly_dataset(
-            trn_img=dataset['train'].train_data,
-            trn_lbl=dataset['train'].train_labels,
-            tst_img=dataset['test'].test_data,
-            tst_lbl=dataset['test'].test_labels,
-            abn_cls_idx=classes[opt.anomaly_class]
+        dataset['train'].data, dataset['train'].targets, \
+        dataset['test'].data, dataset['test'].targets = get_cifar_anomaly_dataset(
+            trn_img=dataset['train'].data,
+            trn_lbl=dataset['train'].targets,
+            tst_img=dataset['test'].data,
+            tst_lbl=dataset['test'].targets,
+            abn_cls_idx=classes[opt.anomaly_class],
+            manualseed=opt.manualseed
         )
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
                                                      batch_size=opt.batchsize,
                                                      shuffle=shuffle[x],
                                                      num_workers=int(opt.workers),
-                                                     drop_last=drop_last_batch[x]) for x in splits}
+                                                     drop_last=drop_last_batch[x],
+                                                     worker_init_fn=(None if opt.manualseed == -1
+                                                     else lambda x: np.random.seed(opt.manualseed)))
+                      for x in splits}
         return dataloader
 
     elif opt.dataset in ['mnist']:
@@ -80,7 +84,7 @@ def load_data(opt):
 
         transform = transforms.Compose(
             [
-                transforms.Scale(opt.isize),
+                transforms.Resize(opt.isize),
                 transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,))
             ]
@@ -90,20 +94,24 @@ def load_data(opt):
         dataset['train'] = MNIST(root='./data', train=True, download=True, transform=transform)
         dataset['test'] = MNIST(root='./data', train=False, download=True, transform=transform)
 
-        dataset['train'].train_data, dataset['train'].train_labels, \
-        dataset['test'].test_data, dataset['test'].test_labels = get_mnist_anomaly_dataset(
-            trn_img=dataset['train'].train_data,
-            trn_lbl=dataset['train'].train_labels,
-            tst_img=dataset['test'].test_data,
-            tst_lbl=dataset['test'].test_labels,
-            abn_cls_idx=opt.anomaly_class
+        dataset['train'].data, dataset['train'].targets, \
+        dataset['test'].data, dataset['test'].targets = get_mnist_anomaly_dataset(
+            trn_img=dataset['train'].data,
+            trn_lbl=dataset['train'].targets,
+            tst_img=dataset['test'].data,
+            tst_lbl=dataset['test'].targets,
+            abn_cls_idx=opt.anomaly_class,
+            manualseed=opt.manualseed
         )
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
                                                      batch_size=opt.batchsize,
                                                      shuffle=shuffle[x],
                                                      num_workers=int(opt.workers),
-                                                     drop_last=drop_last_batch[x]) for x in splits}
+                                                     drop_last=drop_last_batch[x],
+                                                     worker_init_fn=(None if opt.manualseed == -1
+                                                     else lambda x: np.random.seed(opt.manualseed)))
+                      for x in splits}
         return dataloader
 
     elif opt.dataset in ['mnist2']:
@@ -115,7 +123,7 @@ def load_data(opt):
 
         transform = transforms.Compose(
             [
-                transforms.Scale(opt.isize),
+                transforms.Resize(opt.isize),
                 transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,))
             ]
@@ -125,28 +133,32 @@ def load_data(opt):
         dataset['train'] = MNIST(root='./data', train=True, download=True, transform=transform)
         dataset['test'] = MNIST(root='./data', train=False, download=True, transform=transform)
 
-        dataset['train'].train_data, dataset['train'].train_labels, \
-        dataset['test'].test_data, dataset['test'].test_labels = get_mnist2_anomaly_dataset(
-            trn_img=dataset['train'].train_data,
-            trn_lbl=dataset['train'].train_labels,
-            tst_img=dataset['test'].test_data,
-            tst_lbl=dataset['test'].test_labels,
+        dataset['train'].data, dataset['train'].targets, \
+        dataset['test'].data, dataset['test'].targets = get_mnist2_anomaly_dataset(
+            trn_img=dataset['train'].data,
+            trn_lbl=dataset['train'].targets,
+            tst_img=dataset['test'].data,
+            tst_lbl=dataset['test'].targets,
             nrm_cls_idx=opt.anomaly_class,
-            proportion=opt.proportion
+            proportion=opt.proportion,
+            manualseed=opt.manualseed
         )
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
                                                      batch_size=opt.batchsize,
                                                      shuffle=shuffle[x],
                                                      num_workers=int(opt.workers),
-                                                     drop_last=drop_last_batch[x]) for x in splits}
+                                                     drop_last=drop_last_batch[x],
+                                                     worker_init_fn=(None if opt.manualseed == -1
+                                                     else lambda x: np.random.seed(opt.manualseed)))
+                      for x in splits}
         return dataloader
 
     else:
         splits = ['train', 'test']
         drop_last_batch = {'train': True, 'test': False}
         shuffle = {'train': True, 'test': True}
-        transform = transforms.Compose([transforms.Scale(opt.isize),
+        transform = transforms.Compose([transforms.Resize(opt.isize),
                                         transforms.CenterCrop(opt.isize),
                                         transforms.ToTensor(),
                                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), ])
@@ -156,7 +168,10 @@ def load_data(opt):
                                                      batch_size=opt.batchsize,
                                                      shuffle=shuffle[x],
                                                      num_workers=int(opt.workers),
-                                                     drop_last=drop_last_batch[x]) for x in splits}
+                                                     drop_last=drop_last_batch[x],
+                                                     worker_init_fn=(None if opt.manualseed == -1
+                                                     else lambda x: np.random.seed(opt.manualseed)))
+                      for x in splits}
         return dataloader
 
 ##
@@ -315,7 +330,8 @@ def get_mnist_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, abn_cls_idx=0,
     return new_trn_img, new_trn_lbl, new_tst_img, new_tst_lbl
 
 ##
-def get_mnist2_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, nrm_cls_idx=0, proportion=0.5):
+def get_mnist2_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, nrm_cls_idx=0, proportion=0.5,
+                               manualseed=-1):
     """ Create mnist 2 anomaly dataset.
 
     Arguments:
@@ -330,6 +346,10 @@ def get_mnist2_anomaly_dataset(trn_img, trn_lbl, tst_img, tst_lbl, nrm_cls_idx=0
     Returns:
         [tensor] -- New training-test images and labels.
     """
+    # Seed for deterministic behavior
+    if manualseed != -1:
+        torch.manual_seed(manualseed)
+
     # --
     # Find normal abnormal indexes.
     # TODO: PyTorch v0.4 has torch.where function
