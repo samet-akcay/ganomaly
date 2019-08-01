@@ -34,6 +34,9 @@ class Ganomaly(object):
     def __init__(self, opt, dataloader=None):
         super(Ganomaly, self).__init__()
         ##
+        # Seed for deterministic behavior
+        self.seed(opt.manualseed)
+
         # Initalize variables.
         self.opt = opt
         self.visualizer = Visualizer(opt)
@@ -45,13 +48,11 @@ class Ganomaly(object):
         # -- Discriminator attributes.
         self.out_d_real = None
         self.feat_real = None
-        self.err_d_real = None
         self.fake = None
         self.latent_i = None
         self.latent_o = None
         self.out_d_fake = None
         self.feat_fake = None
-        self.err_d_fake = None
         self.err_d = None
 
         # -- Generator attributes.
@@ -114,12 +115,14 @@ class Ganomaly(object):
         Args:
             input (FloatTensor): Input data for batch i.
         """
-        self.input.data.resize_(input[0].size()).copy_(input[0])
-        self.gt.data.resize_(input[1].size()).copy_(input[1])
+        with torch.no_grad():
+            self.input.resize_(input[0].size()).copy_(input[0])
+            self.gt.resize_(input[1].size()).copy_(input[1])
+            self.label.resize_(input[1].size())
 
-        # Copy the first batch as the fixed input.
-        if self.total_steps == self.opt.batchsize:
-            self.fixed_input.data.resize_(input[0].size()).copy_(input[0])
+            # Copy the first batch as the fixed input.
+            if self.total_steps == self.opt.batchsize:
+                self.fixed_input.resize_(input[0].size()).copy_(input[0])
 
     ##
     def update_netd(self):
@@ -131,17 +134,13 @@ class Ganomaly(object):
         self.netd.zero_grad()
         # --
         # Train with real
-        self.label.data.resize_(self.opt.batchsize).fill_(self.real_label)
         self.out_d_real, self.feat_real = self.netd(self.input)
         # --
         # Train with fake
-        self.label.data.resize_(self.opt.batchsize).fill_(self.fake_label)
         self.fake, self.latent_i, self.latent_o = self.netg(self.input)
         self.out_d_fake, self.feat_fake = self.netd(self.fake.detach())
         # --
         self.err_d = l2_loss(self.feat_real, self.feat_fake)
-        self.err_d_real = self.err_d
-        self.err_d_fake = self.err_d
         self.err_d.backward()
         self.optimizer_d.step()
 
@@ -162,7 +161,7 @@ class Ganomaly(object):
 
         """
         self.netg.zero_grad()
-        self.label.data.resize_(self.opt.batchsize).fill_(self.real_label)
+        self.label.fill_(self.real_label)
         self.out_g, _ = self.netd(self.fake)
 
         self.err_g_bce = self.bce_criterion(self.out_g, self.label)
@@ -182,7 +181,7 @@ class Ganomaly(object):
         self.update_netg()
 
         # If D loss is zero, then re-initialize netD
-        if self.err_d_real.item() < 1e-5 or self.err_d_fake.item() < 1e-5:
+        if self.err_d.item() < 1e-5:
             self.reinitialize_netd()
 
     ##
@@ -195,8 +194,6 @@ class Ganomaly(object):
 
         errors = OrderedDict([('err_d', self.err_d.item()),
                               ('err_g', self.err_g.item()),
-                              ('err_d_real', self.err_d_real.item()),
-                              ('err_d_fake', self.err_d_fake.item()),
                               ('err_g_bce', self.err_g_bce.item()),
                               ('err_g_l1l', self.err_g_l1l.item()),
                               ('err_g_enc', self.err_g_enc.item())])
@@ -262,6 +259,7 @@ class Ganomaly(object):
 
         print(">> Training model %s. Epoch %d/%d" % (self.name(), self.epoch+1, self.opt.niter))
         # self.visualizer.print_current_errors(self.epoch, errors)
+
     ##
     def train(self):
         """ Train the model
@@ -358,3 +356,17 @@ class Ganomaly(object):
                 counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)
                 self.visualizer.plot_performance(self.epoch, counter_ratio, performance)
             return performance
+
+    ##
+    def seed(self, seed_value):
+        # Check if seed is default value
+        if seed_value == -1:
+            return
+
+        # Otherwise seed all functionality
+        import random
+        random.seed(seed_value)
+        torch.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(seed_value)
+        np.random.seed(seed_value)
+        torch.backends.cudnn.deterministic = True
