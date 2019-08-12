@@ -61,7 +61,7 @@ def load_data(opt):
             trn_lbl=dataset['train'].targets,
             tst_img=dataset['test'].data,
             tst_lbl=dataset['test'].targets,
-            abn_cls_idx=classes[opt.anomaly_class],
+            abn_cls_idx=classes[opt.abnormal_class],
             manualseed=opt.manualseed
         )
 
@@ -76,7 +76,7 @@ def load_data(opt):
         return dataloader
 
     elif opt.dataset in ['mnist']:
-        opt.anomaly_class = int(opt.anomaly_class)
+        opt.abnormal_class = int(opt.abnormal_class)
 
         splits = ['train', 'test']
         drop_last_batch = {'train': True, 'test': False}
@@ -100,7 +100,7 @@ def load_data(opt):
             trn_lbl=dataset['train'].targets,
             tst_img=dataset['test'].data,
             tst_lbl=dataset['test'].targets,
-            abn_cls_idx=opt.anomaly_class,
+            abn_cls_idx=opt.abnormal_class,
             manualseed=opt.manualseed
         )
 
@@ -115,7 +115,7 @@ def load_data(opt):
         return dataloader
 
     elif opt.dataset in ['mnist2']:
-        opt.anomaly_class = int(opt.anomaly_class)
+        opt.abnormal_class = int(opt.abnormal_class)
 
         splits = ['train', 'test']
         drop_last_batch = {'train': True, 'test': False}
@@ -139,7 +139,7 @@ def load_data(opt):
             trn_lbl=dataset['train'].targets,
             tst_img=dataset['test'].data,
             tst_lbl=dataset['test'].targets,
-            nrm_cls_idx=opt.anomaly_class,
+            nrm_cls_idx=opt.abnormal_class,
             proportion=opt.proportion,
             manualseed=opt.manualseed
         )
