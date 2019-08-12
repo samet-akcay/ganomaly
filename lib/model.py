@@ -257,23 +257,6 @@ class Ganomaly(BaseModel):
     def __init__(self, opt, dataloader):
         super(Ganomaly, self).__init__(opt, dataloader)
 
-        # # -- Discriminator attributes.
-        # self.pred_real = None
-        # self.feat_real = None
-        # self.fake = None
-        # self.latent_i = None
-        # self.latent_o = None
-        # self.out_d_fake = None
-        # self.feat_fake = None
-        # self.err_d = None
-
-        # # -- Generator attributes.
-        # self.out_g = None
-        # self.err_g_bce = None
-        # self.err_g_l1l = None
-        # self.err_g_enc = None
-        # self.err_g = None
-
         # -- Misc attributes
         self.epoch = 0
         self.times = []
