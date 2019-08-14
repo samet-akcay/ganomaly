@@ -13,7 +13,7 @@ __pycache__/
 .vscode/
 .idea/
 .ganomaly/
-
+.ipynb_checkpoints
 
 lib/data/__pycache__/
 lib/loss/__pycache__/

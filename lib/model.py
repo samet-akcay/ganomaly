@@ -20,19 +20,11 @@ from lib.visualizer import Visualizer
 from lib.loss import l2_loss
 from lib.evaluate import evaluate
 
-##
-class Ganomaly(object):
-    """GANomaly Class
+
+class BaseModel():
+    """ Base Model for ganomaly
     """
-
-    @staticmethod
-    def name():
-        """Return name of the class.
-        """
-        return 'Ganomaly'
-
-    def __init__(self, opt, dataloader=None):
-        super(Ganomaly, self).__init__()
+    def __init__(self, opt, dataloader):
         ##
         # Seed for deterministic behavior
         self.seed(opt.manualseed)
@@ -45,71 +37,8 @@ class Ganomaly(object):
         self.tst_dir = os.path.join(self.opt.outf, self.opt.name, 'test')
         self.device = torch.device("cuda:0" if self.opt.device != 'cpu' else "cpu")
 
-        # -- Discriminator attributes.
-        self.out_d_real = None
-        self.feat_real = None
-        self.fake = None
-        self.latent_i = None
-        self.latent_o = None
-        self.out_d_fake = None
-        self.feat_fake = None
-        self.err_d = None
-
-        # -- Generator attributes.
-        self.out_g = None
-        self.err_g_bce = None
-        self.err_g_l1l = None
-        self.err_g_enc = None
-        self.err_g = None
-
-        # -- Misc attributes
-        self.epoch = 0
-        self.times = []
-        self.total_steps = 0
-
-        ##
-        # Create and initialize networks.
-        self.netg = NetG(self.opt).to(self.device)
-        self.netd = NetD(self.opt).to(self.device)
-        self.netg.apply(weights_init)
-        self.netd.apply(weights_init)
-
-        ##
-        if self.opt.resume != '':
-            print("\nLoading pre-trained networks.")
-            self.opt.iter = torch.load(os.path.join(self.opt.resume, 'netG.pth'))['epoch']
-            self.netg.load_state_dict(torch.load(os.path.join(self.opt.resume, 'netG.pth'))['state_dict'])
-            self.netd.load_state_dict(torch.load(os.path.join(self.opt.resume, 'netD.pth'))['state_dict'])
-            print("\tDone.\n")
-
-        # print(self.netg)
-        # print(self.netd)
-
-        ##
-        # Loss Functions
-        self.bce_criterion = nn.BCELoss()
-        self.l1l_criterion = nn.L1Loss()
-        self.l2l_criterion = l2_loss
-
-        ##
-        # Initialize input tensors.
-        self.input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
-        self.label = torch.empty(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
-        self.gt    = torch.empty(size=(opt.batchsize,), dtype=torch.long, device=self.device)
-        self.fixed_input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
-        self.real_label = 1
-        self.fake_label = 0
-
-        ##
-        # Setup optimizer
-        if self.opt.isTrain:
-            self.netg.train()
-            self.netd.train()
-            self.optimizer_d = optim.Adam(self.netd.parameters(), lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
-            self.optimizer_g = optim.Adam(self.netg.parameters(), lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
-
     ##
-    def set_input(self, input):
+    def set_input(self, input:torch.Tensor):
         """ Set input and ground truth
 
         Args:
@@ -125,64 +54,23 @@ class Ganomaly(object):
                 self.fixed_input.resize_(input[0].size()).copy_(input[0])
 
     ##
-    def update_netd(self):
+    def seed(self, seed_value):
+        """ Seed 
+        
+        Arguments:
+            seed_value {int} -- [description]
         """
-        Update D network: Ladv = |f(real) - f(fake)|_2
-        """
-        ##
-        # Feature Matching.
-        self.netd.zero_grad()
-        # --
-        # Train with real
-        self.out_d_real, self.feat_real = self.netd(self.input)
-        # --
-        # Train with fake
-        self.fake, self.latent_i, self.latent_o = self.netg(self.input)
-        self.out_d_fake, self.feat_fake = self.netd(self.fake.detach())
-        # --
-        self.err_d = l2_loss(self.feat_real, self.feat_fake)
-        self.err_d.backward()
-        self.optimizer_d.step()
+        # Check if seed is default value
+        if seed_value == -1:
+            return
 
-
-    ##
-    def reinitialize_netd(self):
-        """ Initialize the weights of netD
-        """
-        self.netd.apply(weights_init)
-        print('Reloading d net')
-
-    ##
-    def update_netg(self):
-        """
-        # ============================================================ #
-        # (2) Update G network: log(D(G(x)))  + ||G(x) - x||           #
-        # ============================================================ #
-
-        """
-        self.netg.zero_grad()
-        self.label.fill_(self.real_label)
-        self.out_g, _ = self.netd(self.fake)
-
-        self.err_g_bce = self.bce_criterion(self.out_g, self.label)
-        self.err_g_l1l = self.l1l_criterion(self.fake, self.input)  # constrain x' to look like x
-        self.err_g_enc = self.l2l_criterion(self.latent_o, self.latent_i)
-        self.err_g = self.err_g_bce * self.opt.w_bce + self.err_g_l1l * self.opt.w_rec + self.err_g_enc * self.opt.w_enc
-
-        self.err_g.backward(retain_graph=True)
-        self.optimizer_g.step()
-
-    ##
-    def optimize(self):
-        """ Optimize netD and netG  networks.
-        """
-
-        self.update_netd()
-        self.update_netg()
-
-        # If D loss is zero, then re-initialize netD
-        if self.err_d.item() < 1e-5:
-            self.reinitialize_netd()
+        # Otherwise seed all functionality
+        import random
+        random.seed(seed_value)
+        torch.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(seed_value)
+        np.random.seed(seed_value)
+        torch.backends.cudnn.deterministic = True
 
     ##
     def get_errors(self):
@@ -192,11 +80,12 @@ class Ganomaly(object):
             [OrderedDict]: Dictionary containing errors.
         """
 
-        errors = OrderedDict([('err_d', self.err_d.item()),
-                              ('err_g', self.err_g.item()),
-                              ('err_g_bce', self.err_g_bce.item()),
-                              ('err_g_l1l', self.err_g_l1l.item()),
-                              ('err_g_enc', self.err_g_enc.item())])
+        errors = OrderedDict([
+            ('err_d', self.err_d.item()),
+            ('err_g', self.err_g.item()),
+            ('err_g_adv', self.err_g_adv.item()),
+            ('err_g_con', self.err_g_con.item()),
+            ('err_g_enc', self.err_g_enc.item())])
 
         return errors
 
@@ -223,8 +112,7 @@ class Ganomaly(object):
         """
 
         weight_dir = os.path.join(self.opt.outf, self.opt.name, 'train', 'weights')
-        if not os.path.exists(weight_dir):
-            os.makedirs(weight_dir)
+        if not os.path.exists(weight_dir): os.makedirs(weight_dir)
 
         torch.save({'epoch': epoch + 1, 'state_dict': self.netg.state_dict()},
                    '%s/netG.pth' % (weight_dir))
@@ -232,7 +120,7 @@ class Ganomaly(object):
                    '%s/netD.pth' % (weight_dir))
 
     ##
-    def train_epoch(self):
+    def train_one_epoch(self):
         """ Train the model for one epoch.
         """
 
@@ -243,7 +131,8 @@ class Ganomaly(object):
             epoch_iter += self.opt.batchsize
 
             self.set_input(data)
-            self.optimize()
+            # self.optimize()
+            self.optimize_params()
 
             if self.total_steps % self.opt.print_freq == 0:
                 errors = self.get_errors()
@@ -257,7 +146,7 @@ class Ganomaly(object):
                 if self.opt.display:
                     self.visualizer.display_current_images(reals, fakes, fixed)
 
-        print(">> Training model %s. Epoch %d/%d" % (self.name(), self.epoch+1, self.opt.niter))
+        print(">> Training model %s. Epoch %d/%d" % (self.name, self.epoch+1, self.opt.niter))
         # self.visualizer.print_current_errors(self.epoch, errors)
 
     ##
@@ -271,16 +160,16 @@ class Ganomaly(object):
         best_auc = 0
 
         # Train for niter epochs.
-        print(">> Training model %s." % self.name())
+        print(">> Training model %s." % self.name)
         for self.epoch in range(self.opt.iter, self.opt.niter):
             # Train for one epoch
-            self.train_epoch()
+            self.train_one_epoch()
             res = self.test()
             if res['AUC'] > best_auc:
                 best_auc = res['AUC']
                 self.save_weights(self.epoch)
             self.visualizer.print_current_performance(res, best_auc)
-        print(">> Training model %s.[Done]" % self.name())
+        print(">> Training model %s.[Done]" % self.name)
 
     ##
     def test(self):
@@ -295,7 +184,7 @@ class Ganomaly(object):
         with torch.no_grad():
             # Load the weights of netg and netd.
             if self.opt.load_weights:
-                path = "./output/{}/{}/train/weights/netG.pth".format(self.name().lower(), self.opt.dataset)
+                path = "./output/{}/{}/train/weights/netG.pth".format(self.name.lower(), self.opt.dataset)
                 pretrained_dict = torch.load(path)['state_dict']
 
                 try:
@@ -312,7 +201,7 @@ class Ganomaly(object):
             self.latent_i  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
             self.latent_o  = torch.zeros(size=(len(self.dataloader['test'].dataset), self.opt.nz), dtype=torch.float32, device=self.device)
 
-            # print("   Testing model %s." % self.name())
+            # print("   Testing model %s." % self.name)
             self.times = []
             self.total_steps = 0
             epoch_iter = 0
@@ -357,16 +246,117 @@ class Ganomaly(object):
                 self.visualizer.plot_performance(self.epoch, counter_ratio, performance)
             return performance
 
-    ##
-    def seed(self, seed_value):
-        # Check if seed is default value
-        if seed_value == -1:
-            return
+##
+class Ganomaly(BaseModel):
+    """GANomaly Class
+    """
 
-        # Otherwise seed all functionality
-        import random
-        random.seed(seed_value)
-        torch.manual_seed(seed_value)
-        torch.cuda.manual_seed_all(seed_value)
-        np.random.seed(seed_value)
-        torch.backends.cudnn.deterministic = True
+    @property
+    def name(self): return 'Ganomaly'
+
+    def __init__(self, opt, dataloader):
+        super(Ganomaly, self).__init__(opt, dataloader)
+
+        # -- Misc attributes
+        self.epoch = 0
+        self.times = []
+        self.total_steps = 0
+
+        ##
+        # Create and initialize networks.
+        self.netg = NetG(self.opt).to(self.device)
+        self.netd = NetD(self.opt).to(self.device)
+        self.netg.apply(weights_init)
+        self.netd.apply(weights_init)
+
+        ##
+        if self.opt.resume != '':
+            print("\nLoading pre-trained networks.")
+            self.opt.iter = torch.load(os.path.join(self.opt.resume, 'netG.pth'))['epoch']
+            self.netg.load_state_dict(torch.load(os.path.join(self.opt.resume, 'netG.pth'))['state_dict'])
+            self.netd.load_state_dict(torch.load(os.path.join(self.opt.resume, 'netD.pth'))['state_dict'])
+            print("\tDone.\n")
+
+        self.l_adv = l2_loss
+        self.l_con = nn.L1Loss()
+        self.l_enc = l2_loss
+        self.l_bce = nn.BCELoss()
+
+        ##
+        # Initialize input tensors.
+        self.input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.label = torch.empty(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
+        self.gt    = torch.empty(size=(opt.batchsize,), dtype=torch.long, device=self.device)
+        self.fixed_input = torch.empty(size=(self.opt.batchsize, 3, self.opt.isize, self.opt.isize), dtype=torch.float32, device=self.device)
+        self.real_label = torch.ones (size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
+        self.fake_label = torch.zeros(size=(self.opt.batchsize,), dtype=torch.float32, device=self.device)
+        ##
+        # Setup optimizer
+        if self.opt.isTrain:
+            self.netg.train()
+            self.netd.train()
+            self.optimizer_d = optim.Adam(self.netd.parameters(), lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
+            self.optimizer_g = optim.Adam(self.netg.parameters(), lr=self.opt.lr, betas=(self.opt.beta1, 0.999))
+
+    ##
+    def forward_g(self):
+        """ Forward propagate through netG
+        """
+        self.fake, self.latent_i, self.latent_o = self.netg(self.input)
+
+    ##
+    def forward_d(self):
+        """ Forward propagate through netD
+        """
+        self.pred_real, self.feat_real = self.netd(self.input)
+        self.pred_fake, self.feat_fake = self.netd(self.fake.detach())
+
+    ##
+    def backward_g(self):
+        """ Backpropagate through netG
+        """
+        self.err_g_adv = self.l_adv(self.feat_fake, self.feat_real)
+        self.err_g_con = self.l_con(self.fake, self.input)
+        self.err_g_enc = self.l_enc(self.latent_o, self.latent_i)
+        self.err_g = self.err_g_adv * self.opt.w_adv + \
+                     self.err_g_con * self.opt.w_con + \
+                     self.err_g_enc * self.opt.w_enc
+        self.err_g.backward(retain_graph=True)
+
+    ##
+    def backward_d(self):
+        """ Backpropagate through netD
+        """
+        # Real - Fake Loss
+        self.err_d_real = self.l_bce(self.pred_real, self.real_label)
+        self.err_d_fake = self.l_bce(self.pred_fake, self.fake_label)
+
+        # NetD Loss & Backward-Pass
+        self.err_d = (self.err_d_real + self.err_d_fake) * 0.5
+        self.err_d.backward()
+
+    ##
+    def reinit_d(self):
+        """ Re-initialize the weights of netD
+        """
+        self.netd.apply(weights_init)
+        print('   Reloading net d')
+
+    def optimize_params(self):
+        """ Forwardpass, Loss Computation and Backwardpass.
+        """
+        # Forward-pass
+        self.forward_g()
+        self.forward_d()
+
+        # Backward-pass
+        # netg
+        self.optimizer_g.zero_grad()
+        self.backward_g()
+        self.optimizer_g.step()
+
+        # netd
+        self.optimizer_d.zero_grad()
+        self.backward_d()
+        self.optimizer_d.step()
+        if self.err_d.item() < 1e-5: self.reinit_d()

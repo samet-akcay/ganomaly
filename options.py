@@ -48,7 +48,7 @@ class Options():
         self.parser.add_argument('--display', action='store_true', help='Use visdom.')
         self.parser.add_argument('--outf', default='./output', help='folder to output images and model checkpoints')
         self.parser.add_argument('--manualseed', default=-1, type=int, help='manual seed')
-        self.parser.add_argument('--anomaly_class', default='car', help='Anomaly class idx for mnist and cifar datasets')
+        self.parser.add_argument('--abnormal_class', default='car', help='Anomaly class idx for mnist and cifar datasets')
         self.parser.add_argument('--proportion', type=float, default=0.1, help='Proportion of anomalies in test set.')
         self.parser.add_argument('--metric', type=str, default='roc', help='Evaluation metric.')
 
@@ -64,9 +64,9 @@ class Options():
         self.parser.add_argument('--niter', type=int, default=15, help='number of epochs to train for')
         self.parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         self.parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
-        self.parser.add_argument('--w_bce', type=float, default=1, help='alpha to weight bce loss.')
-        self.parser.add_argument('--w_rec', type=float, default=50, help='alpha to weight reconstruction loss')
-        self.parser.add_argument('--w_enc', type=float, default=1, help='alpha to weight encoder loss')
+        self.parser.add_argument('--w_adv', type=float, default=1, help='Adversarial loss weight')
+        self.parser.add_argument('--w_con', type=float, default=50, help='Reconstruction loss weight')
+        self.parser.add_argument('--w_enc', type=float, default=1, help='Encoder loss weight.')
         self.isTrain = True
         self.opt = None
 
