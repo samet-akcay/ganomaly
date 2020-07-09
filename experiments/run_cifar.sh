@@ -3,7 +3,7 @@
 # Run CIFAR10 experiment on ganomaly
 
 declare -a arr=("plane" "car" "bird" "cat" "deer" "dog" "frog" "horse" "ship" "truck" )
-for m in {0..2}
+for m in $(seq 0 2)
 do
     echo "Manual Seed: $m"
     for i in "${arr[@]}";

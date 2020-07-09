@@ -165,8 +165,8 @@ class BaseModel():
             # Train for one epoch
             self.train_one_epoch()
             res = self.test()
-            if res['AUC'] > best_auc:
-                best_auc = res['AUC']
+            if res[self.opt.metric] > best_auc:
+                best_auc = res[self.opt.metric]
                 self.save_weights(self.epoch)
             self.visualizer.print_current_performance(res, best_auc)
         print(">> Training model %s.[Done]" % self.name)
@@ -239,7 +239,7 @@ class BaseModel():
             self.an_scores = (self.an_scores - torch.min(self.an_scores)) / (torch.max(self.an_scores) - torch.min(self.an_scores))
             # auc, eer = roc(self.gt_labels, self.an_scores)
             auc = evaluate(self.gt_labels, self.an_scores, metric=self.opt.metric)
-            performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), ('AUC', auc)])
+            performance = OrderedDict([('Avg Run Time (ms/batch)', self.times), (self.opt.metric, auc)])
 
             if self.opt.display_id > 0 and self.opt.phase == 'test':
                 counter_ratio = float(epoch_iter) / len(self.dataloader['test'].dataset)

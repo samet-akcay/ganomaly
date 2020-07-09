@@ -28,7 +28,7 @@ def evaluate(labels, scores, metric='roc'):
         threshold = 0.20
         scores[scores >= threshold] = 1
         scores[scores <  threshold] = 0
-        return f1_score(labels, scores)
+        return f1_score(labels.cpu(), scores.cpu())
     else:
         raise NotImplementedError("Check the evaluation metric.")
 
@@ -67,5 +67,5 @@ def roc(labels, scores, saveto=None):
     return roc_auc
 
 def auprc(labels, scores):
-    ap = average_precision_score(labels, scores)
+    ap = average_precision_score(labels.cpu(), scores.cpu())
     return ap
