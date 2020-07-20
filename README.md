@@ -30,6 +30,7 @@ This repository contains PyTorch implementation of the following paper: GANomaly
     ```
 3. Install the dependencies.
    ```
+   conda install -c intel mkl_fft
    pip install --user --requirement requirements.txt
    ```
 
