@@ -1,3 +1,6 @@
+# UPDATE: 
+This repo is no longer maintained. [GANomaly](https://github.com/openvinotoolkit/anomalib/tree/development/anomalib/models/ganomaly) implementation has been added to [anomalib](https://github.com/openvinotoolkit/anomalib), the largest public collection of ready-to-use deep learning anomaly detection algorithms and benchmark datasets.
+
 # GANomaly
 
 This repository contains PyTorch implementation of the following paper: GANomaly: Semi-Supervised Anomaly Detection via Adversarial Training [[1]](#reference)
