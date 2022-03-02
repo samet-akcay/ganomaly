@@ -181,6 +181,7 @@ class BaseModel():
         Raises:
             IOError: Model weights not found.
         """
+        self.netg.eval()
         with torch.no_grad():
             # Load the weights of netg and netd.
             if self.opt.load_weights:
