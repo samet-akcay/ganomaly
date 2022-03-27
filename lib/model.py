@@ -184,7 +184,7 @@ class BaseModel():
         with torch.no_grad():
             # Load the weights of netg and netd.
             if self.opt.load_weights:
-                path = "./output/{}/{}/train/weights/netG.pth".format(self.name.lower(), self.opt.dataset)
+                path = "{}/{}/{}/train/weights/netG.pth".format(self.opt.outf, self.name.lower(), self.opt.dataset)
                 pretrained_dict = torch.load(path)['state_dict']
 
                 try:
